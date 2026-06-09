@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocMind — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#080c10;--surface:#0d1117;--surface2:#111820;--border:#1e2a38;--accent:#00e5ff;--accent2:#7c3aed;--text:#e2e8f0;--muted:#4a5568;--success:#10b981;--warning:#f59e0b;--danger:#ef4444; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; display:flex; }
+  .sidebar { width:240px; min-height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-logo { padding:24px 20px; border-bottom:1px solid var(--border); }
+  .brand { font-size:22px; font-weight:800; letter-spacing:-1px; }
+  .brand span { color:var(--accent); }
+  .brand-sub { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+  .sidebar-nav { padding:16px 12px; flex:1; }
+  .nav-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; padding:8px 8px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:2px; color:var(--muted); font-size:14px; font-weight:600; transition:all 0.15s; text-decoration:none; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+  .nav-item.active { background:rgba(0,229,255,0.08); color:var(--accent); border-left:2px solid var(--accent); }
+  .nav-item svg { width:16px; height:16px; flex-shrink:0; }
+  .sidebar-footer { padding:16px; border-top:1px solid var(--border); }
+  .user-pill { display:flex; align-items:center; gap:10px; padding:10px; border-radius:2px; background:rgba(255,255,255,0.03); cursor:pointer; }
+  .avatar { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .topbar { height:60px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:var(--surface); flex-shrink:0; }
+  .page-title { font-size:18px; font-weight:800; letter-spacing:-0.5px; }
+  .page-title span { color:var(--accent); }
+  .btn { padding:8px 16px; border-radius:2px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; letter-spacing:0.5px; }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-ghost:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+  .btn-accent { background:var(--accent); color:#080c10; }
+  .btn-accent:hover { opacity:0.9; }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+  .content { flex:1; overflow-y:auto; padding:24px; }
+  .content::-webkit-scrollbar { width:4px; }
+  .content::-webkit-scrollbar-thumb { background:var(--border); }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:20px; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .stat-card.c1::before { background:var(--accent); }
+  .stat-card.c2::before { background:var(--accent2); }
+  .stat-card.c3::before { background:var(--success); }
+  .stat-card.c4::before { background:var(--warning); }
+  .stat-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; }
+  .stat-value { font-size:32px; font-weight:800; letter-spacing:-1px; margin:8px 0 4px; }
+  .stat-sub { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); }
+  .upload-zone { border:2px dashed var(--border); border-radius:2px; padding:48px; text-align:center; margin-bottom:24px; cursor:pointer; transition:all 0.2s; background:rgba(0,229,255,0.01); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color:var(--accent); background:rgba(0,229,255,0.04); }
+  .upload-icon { width:48px; height:48px; margin:0 auto 16px; color:var(--muted); }
+  .type-badge { font-family:'Space Mono',monospace; font-size:10px; padding:4px 10px; border:1px solid var(--border); border-radius:2px; color:var(--muted); }
+  #fileInput { display:none; }
+  .file-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+  .table-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+  .search-box { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:2px; padding:8px 12px; }
+  .search-box input { background:transparent; border:none; outline:none; color:var(--text); font-family:'Syne',sans-serif; font-size:13px; width:180px; }
+  .search-box input::placeholder { color:var(--muted); }
+  .file-row { display:grid; grid-template-columns:40px 1fr 120px 100px 110px 150px 130px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); transition:background 0.1s; }
+  .file-row:last-child { border-bottom:none; }
+  .file-row:hover { background:rgba(255,255,255,0.02); }
+  .file-row.hdr { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; background:rgba(255,255,255,0.01); }
+  .file-icon { width:32px; height:32px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; font-family:'Space Mono',monospace; }
+  .file-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:16px; }
+  .file-meta { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); }
+  .cat-tag { display:inline-block; padding:3px 8px; border-radius:2px; font-family:'Space Mono',monospace; font-size:10px; font-weight:700; text-transform:uppercase; }
+  .status-dot { display:inline-flex; align-items:center; gap:6px; font-family:'Space Mono',monospace; font-size:11px; }
+  .status-dot::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .status-dot.ready::before { background:var(--success); box-shadow:0 0 6px var(--success); }
+  .status-dot.processing::before { background:var(--warning); animation:pulse 1s infinite; }
+  .status-dot.pending::before { background:var(--muted); }
+  .status-dot.error::before { background:var(--danger); }
+  .row-actions { display:flex; gap:6px; }
+  .icon-btn { width:28px; height:28px; border-radius:2px; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:all 0.15s; font-size:13px; }
+  .icon-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.3); }
+  .icon-btn.red:hover { color:var(--danger); border-color:var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .modal-overlay { position:fixed; inset:0; background:rgba(8,12,16,0.85); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:2px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; animation:fadeUp 0.3s ease; }
+  .modal-header { padding:24px 24px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .modal-body { padding:24px; }
+  .modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
+  .select-input { width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text); padding:10px 14px; font-family:'Syne',sans-serif; font-size:14px; outline:none; border-radius:2px; appearance:none; cursor:pointer; }
+  .select-input:focus { border-color:var(--accent); }
+  .opt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .opt-card { border:1px solid var(--border); border-radius:2px; padding:14px; cursor:pointer; transition:all 0.15s; }
+  .opt-card.sel { border-color:var(--accent); background:rgba(0,229,255,0.05); }
+  .opt-card-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+  .opt-card-desc { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); line-height:1.5; }
+  .form-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .form-input { width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text); padding:10px 14px; font-family:'Syne',sans-serif; font-size:14px; outline:none; border-radius:2px; }
+  .form-input:focus { border-color:var(--accent); }
+  .slider-wrap { display:flex; align-items:center; gap:12px; }
+  .slider-wrap input[type=range] { flex:1; accent-color:var(--accent); }
+  .slider-val { font-family:'Space Mono',monospace; font-size:12px; color:var(--accent); min-width:40px; text-align:right; }
+  .progress-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width 0.3s; }
+  .cat-btn { padding:6px 14px; border-radius:2px; font-family:'Space Mono',monospace; font-size:11px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--muted); transition:all 0.15s; }
+  .cat-btn:hover { color:var(--text); }
+  .cat-btn.active { color:var(--accent); border-color:var(--accent); background:rgba(0,229,255,0.1); }
+  .empty-state { padding:48px; text-align:center; color:var(--muted); }
+  /* Category colors */
+  .cat-medical { background:rgba(6,182,212,0.15); color:#06b6d4; } .cat-legal { background:rgba(167,139,250,0.15); color:#a78bfa; } .cat-research { background:rgba(16,185,129,0.15); color:#10b981; } .cat-news { background:rgba(245,158,11,0.15); color:#f59e0b; } .cat-political { background:rgba(248,113,113,0.15); color:#f87171; } .cat-financial { background:rgba(52,211,153,0.15); color:#34d399; } .cat-other { background:rgba(148,163,184,0.15); color:#94a3b8; }
+  .fi-pdf { background:rgba(239,68,68,0.15); color:#ef4444; } .fi-csv { background:rgba(16,185,129,0.15); color:#10b981; } .fi-docx,.fi-doc { background:rgba(59,130,246,0.15); color:#3b82f6; } .fi-txt { background:rgba(148,163,184,0.15); color:#94a3b8; } .fi-json { background:rgba(245,158,11,0.15); color:#f59e0b; } .fi-xlsx,.fi-xls { background:rgba(16,185,129,0.15); color:#10b981; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Doc<span>Mind</span></div>
+    <div class="brand-sub">// AI Intelligence Platform</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="/dashboard" class="nav-item active">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="/chatbots" class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Chatbots
+    </a>
+    <a href="/account" class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Account
+    </a>
+    <div class="nav-label" style="margin-top:16px;">Storage</div>
+    <div style="padding:10px 8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--muted);">Used</span>
+        <span id="storageText" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);">— / —</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="storageBar" style="width:0%"></div></div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill" onclick="window.location.href='/account'">
+      <div class="avatar" data-user-initials>??</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;" data-user-name>Loading...</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);" data-user-plan>FREE TIER</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">File <span>Manager</span></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('configModal')">⚙ Config</button>
+      <button class="btn btn-accent btn-sm" onclick="document.getElementById('fileInput').click()">+ Upload Files</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card c1">
+        <div class="stat-label">Total Files</div>
+        <div class="stat-value" id="stat-files" style="color:var(--accent);">—</div>
+        <div class="stat-sub">in your library</div>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-label">Active Chatbots</div>
+        <div class="stat-value" id="stat-bots" style="color:#a78bfa;">—</div>
+        <div class="stat-sub">ready to use</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-label">Indexed Chunks</div>
+        <div class="stat-value" id="stat-chunks" style="color:var(--success);">—</div>
+        <div class="stat-sub">total vectors</div>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-label">Storage Used</div>
+        <div class="stat-value" id="stat-storage" style="color:var(--warning);">—</div>
+        <div class="stat-sub" id="stat-storage-pct">of limit</div>
+      </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" multiple accept=".pdf,.csv,.docx,.doc,.txt,.json,.xlsx,.xls,.pptx,.md">
+      <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Drop files here or click to browse</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">Auto-categorized by AI • Max 50MB per file</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+        <span class="type-badge">PDF</span><span class="type-badge">CSV</span><span class="type-badge">DOCX</span>
+        <span class="type-badge">TXT</span><span class="type-badge">JSON</span><span class="type-badge">XLSX</span>
+      </div>
+    </div>
+
+    <!-- Upload Progress -->
+    <div id="uploadProgress" style="display:none;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:20px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:700;" id="uploadLabel">Uploading...</span>
+        <span id="uploadPct" style="font-family:'Space Mono',monospace;font-size:12px;color:var(--accent);">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="uploadBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- File Table -->
+    <div class="file-table-wrap">
+      <div class="table-header">
+        <div style="font-size:14px;font-weight:700;">All Files</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="search-box">
+            <svg style="width:14px;height:14px;color:var(--muted)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search files..." id="searchInput" oninput="filterFiles()">
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadFiles()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Category filter -->
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;align-self:center;margin-right:4px;">Filter:</span>
+        <button class="cat-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="cat-btn" onclick="setFilter('medical',this)">🏥 Medical</button>
+        <button class="cat-btn" onclick="setFilter('legal',this)">⚖️ Legal</button>
+        <button class="cat-btn" onclick="setFilter('research',this)">🔬 Research</button>
+        <button class="cat-btn" onclick="setFilter('news',this)">📰 News</button>
+        <button class="cat-btn" onclick="setFilter('political',this)">🏛️ Political</button>
+        <button class="cat-btn" onclick="setFilter('financial',this)">💹 Financial</button>
+      </div>
+
+      <div class="file-row hdr">
+        <div></div><div>File Name</div><div>Category</div><div>Size</div><div>Status</div><div>Uploaded</div><div>Actions</div>
+      </div>
+      <div id="fileList">
+        <div class="empty-state">
+          <div style="font-size:32px;margin-bottom:12px;">📂</div>
+          <div style="font-size:15px;font-weight:700;">No files yet</div>
+          <div style="font-size:13px;margin-top:4px;">Upload your first document to get started</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- BUILD CHATBOT MODAL -->
+<div class="modal-overlay" id="buildModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:16px;font-weight:800;">Build Chatbot</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;" id="buildModalFile">Configure RAG pipeline</div>
+      </div>
+      <button class="icon-btn" onclick="closeModal('buildModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="buildFileId">
+
+      <div style="margin-bottom:20px;">
+        <label class="form-label">Chatbot Name</label>
+        <input type="text" class="form-input" id="botName" placeholder="e.g. Medical Assistant">
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label class="form-label">Chunking Strategy</label>
+        <div class="opt-grid" id="chunkingOpts">
+          <div class="opt-card sel" onclick="selectOpt(this,'#chunkingOpts')"><div class="opt-card-title">Fixed Size</div><div class="opt-card-desc">Splits by token count. Fast & predictable.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#chunkingOpts')"><div class="opt-card-title">Semantic</div><div class="opt-card-desc">NLP-aware sentence boundary splitting.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#chunkingOpts')"><div class="opt-card-title">Recursive</div><div class="opt-card-desc">LangChain recursive character splitter.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#chunkingOpts')"><div class="opt-card-title">Graph-based</div><div class="opt-card-desc">GraphRAG: entity-relation knowledge graph.</div></div>
+        </div>
+        <div style="margin-top:14px;">
+          <label class="form-label">Chunk Size (tokens)</label>
+          <div class="slider-wrap">
+            <input type="range" id="chunkSize" min="128" max="2048" value="512" step="64" oninput="document.getElementById('chunkSizeVal').textContent=this.value">
+            <span class="slider-val" id="chunkSizeVal">512</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <label class="form-label">Overlap (tokens)</label>
+          <div class="slider-wrap">
+            <input type="range" id="chunkOverlap" min="0" max="512" value="64" step="16" oninput="document.getElementById('chunkOverlapVal').textContent=this.value">
+            <span class="slider-val" id="chunkOverlapVal">64</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label class="form-label">Embedding Model</label>
+        <div class="opt-grid" id="embedOpts">
+          <div class="opt-card sel" onclick="selectOpt(this,'#embedOpts')"><div class="opt-card-title">OpenAI Ada-002</div><div class="opt-card-desc">1536-dim. Best general-purpose.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#embedOpts')"><div class="opt-card-title">text-emb-3-large</div><div class="opt-card-desc">3072-dim. High accuracy.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#embedOpts')"><div class="opt-card-title">BGE-M3 (Local)</div><div class="opt-card-desc">Multilingual. Privacy-friendly.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#embedOpts')"><div class="opt-card-title">Cohere Embed v3</div><div class="opt-card-desc">Strong retrieval performance.</div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label class="form-label">Vector Database</label>
+        <div class="opt-grid" id="vdbOpts">
+          <div class="opt-card sel" onclick="selectOpt(this,'#vdbOpts')"><div class="opt-card-title">Chroma</div><div class="opt-card-desc">In-memory. Great for dev/testing.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#vdbOpts')"><div class="opt-card-title">Pinecone</div><div class="opt-card-desc">Managed cloud. Highly scalable.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#vdbOpts')"><div class="opt-card-title">Weaviate</div><div class="opt-card-desc">Hybrid BM25 + vector search.</div></div>
+          <div class="opt-card" onclick="selectOpt(this,'#vdbOpts')"><div class="opt-card-title">Qdrant</div><div class="opt-card-desc">Rust-based. High performance.</div></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label">Language Model</label>
+        <select class="select-input" id="llmModel">
+          <option value="gpt-4o">GPT-4o (OpenAI)</option>
+          <option value="gpt-4o-mini" selected>GPT-4o-mini (OpenAI)</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro (Google)</option>
+          <option value="llama-3-70b">Llama 3.1 70B (Local)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('buildModal')">Cancel</button>
+      <button class="btn btn-accent" id="buildBtn" onclick="submitBuildChatbot()">Build Chatbot →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL CONFIG MODAL -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div style="font-size:16px;font-weight:800;">Platform Configuration</div></div>
+      <button class="icon-btn" onclick="closeModal('configModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:20px;"><label class="form-label">Default Chunking</label><select class="select-input"><option>Fixed Size</option><option>Semantic</option><option>Recursive</option><option>Graph-based</option></select></div>
+      <div style="margin-bottom:20px;"><label class="form-label">Default Embedding</label><select class="select-input"><option>OpenAI Ada-002</option><option>BGE-M3</option><option>Cohere Embed v3</option></select></div>
+      <div style="margin-bottom:20px;"><label class="form-label">Default Vector Store</label><select class="select-input"><option>Chroma</option><option>Pinecone</option><option>Weaviate</option><option>Qdrant</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('configModal')">Close</button>
+      <button class="btn btn-accent" onclick="closeModal('configModal');showToast('Configuration saved!')">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('auth');
+
+  let allFiles = [];
+  let activeFilter = 'all';
+  const chunkingMap = ['fixed','semantic','recursive','graph'];
+  const embedMap = ['openai-ada-002','openai-text-3-large','bge-m3','cohere-embed-v3'];
+  const vdbMap = ['chroma','pinecone','weaviate','qdrant'];
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    populateUserUI();
+    await Promise.all([loadStats(), loadFiles()]);
+  }
+
+  async function loadStats() {
+    try {
+      const stats = await API.getStats();
+      document.getElementById('stat-files').textContent = stats.total_files;
+      document.getElementById('stat-bots').textContent = stats.active_chatbots;
+      document.getElementById('stat-chunks').textContent = stats.total_chunks >= 1000
+        ? (stats.total_chunks / 1000).toFixed(1) + 'K' : stats.total_chunks;
+      document.getElementById('stat-storage').textContent = formatBytes(stats.storage_used_bytes);
+      const pct = Math.round(stats.storage_used_bytes / stats.storage_limit_bytes * 100);
+      document.getElementById('stat-storage-pct').textContent = `${pct}% of limit`;
+      document.getElementById('storageText').textContent =
+        `${formatBytes(stats.storage_used_bytes)} / ${formatBytes(stats.storage_limit_bytes)}`;
+      document.getElementById('storageBar').style.width = pct + '%';
+    } catch(e) { console.error('Stats error', e); }
+  }
+
+  async function loadFiles() {
+    try {
+      const params = {};
+      if (activeFilter !== 'all') params.category = activeFilter;
+      const search = document.getElementById('searchInput').value.trim();
+      if (search) params.search = search;
+
+      allFiles = await API.getFiles(params);
+      renderFiles(allFiles);
+    } catch(e) {
+      showToast('Failed to load files: ' + e.message, 'error');
+    }
+  }
+
+  function renderFiles(files) {
+    const list = document.getElementById('fileList');
+    if (!files.length) {
+      list.innerHTML = `<div class="empty-state"><div style="font-size:32px;margin-bottom:12px;">📂</div><div style="font-size:15px;font-weight:700;">No files found</div><div style="font-size:13px;margin-top:4px;">Upload a document or change the filter</div></div>`;
+      return;
+    }
+    list.innerHTML = files.map(f => `
+      <div class="file-row" data-id="${f.id}" data-status="${f.status}">
+        <div><div class="file-icon fi-${f.file_type}">${f.file_type.toUpperCase().slice(0,3)}</div></div>
+        <div class="file-name" title="${f.original_name}">${f.original_name}</div>
+        <div><span class="cat-tag cat-${f.category}">${f.category}</span></div>
+        <div class="file-meta">${formatBytes(f.file_size)}</div>
+        <div><span class="status-dot ${f.status}">${f.status}</span></div>
+        <div class="file-meta">${formatDate(f.uploaded_at)}</div>
+        <div class="row-actions">
+          <a class="icon-btn" href="${API.getDownloadUrl(f.id)}" title="Download" download>⬇</a>
+          <button class="icon-btn" title="Build Chatbot" onclick="openBuildModal('${f.id}','${f.original_name}','${f.status}')" ${f.status !== 'ready' ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>🤖</button>
+          <button class="icon-btn red" title="Delete" onclick="deleteFile('${f.id}','${f.original_name}')">🗑</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Auto-refresh rows that are processing
+    if (files.some(f => f.status === 'processing' || f.status === 'pending')) {
+      setTimeout(loadFiles, 4000);
+    }
+  }
+
+  function filterFiles() {
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(loadFiles, 350);
+  }
+
+  function setFilter(cat, btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = cat;
+    loadFiles();
+  }
+
+  // ── Upload ────────────────────────────────────────────────────────────────
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    handleUpload(e.dataTransfer.files);
+  });
+  document.getElementById('fileInput').addEventListener('change', e => {
+    handleUpload(e.target.files);
+    e.target.value = '';
+  });
+
+  async function handleUpload(fileList) {
+    if (!fileList.length) return;
+    const prog = document.getElementById('uploadProgress');
+    const bar = document.getElementById('uploadBar');
+    const pct = document.getElementById('uploadPct');
+    const label = document.getElementById('uploadLabel');
+
+    prog.style.display = 'block';
+    label.textContent = `Uploading ${fileList.length} file(s)...`;
+
+    // Animate bar while uploading
+    let fakeProgress = 0;
+    const tick = setInterval(() => {
+      fakeProgress = Math.min(fakeProgress + 3, 85);
+      bar.style.width = fakeProgress + '%';
+      pct.textContent = fakeProgress + '%';
+    }, 100);
+
+    try {
+      const saved = await API.uploadFiles(Array.from(fileList));
+      clearInterval(tick);
+      bar.style.width = '100%';
+      pct.textContent = '100%';
+      showToast(`${saved.length} file(s) uploaded and queued for processing`, 'success');
+      await loadStats();
+      await loadFiles();
+    } catch(e) {
+      clearInterval(tick);
+      showToast('Upload failed: ' + e.message, 'error');
+    } finally {
+      setTimeout(() => {
+        prog.style.display = 'none';
+        bar.style.width = '0%';
+      }, 800);
+    }
+  }
+
+  async function deleteFile(fileId, name) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await API.deleteFile(fileId);
+      showToast('File deleted', 'success');
+      await Promise.all([loadStats(), loadFiles()]);
+    } catch(e) {
+      showToast('Delete failed: ' + e.message, 'error');
+    }
+  }
+
+  // ── Build Chatbot ─────────────────────────────────────────────────────────
+  function openBuildModal(fileId, fileName, status) {
+    if (status !== 'ready') {
+      showToast('File must finish processing before building a chatbot.', 'warning');
+      return;
+    }
+    document.getElementById('buildFileId').value = fileId;
+    document.getElementById('buildModalFile').textContent = `Source: ${fileName}`;
+    document.getElementById('botName').value = fileName.replace(/\.[^.]+$/, '') + ' Bot';
+    openModal('buildModal');
+  }
+
+  function selectOpt(el, groupSelector) {
+    document.querySelector(groupSelector).querySelectorAll('.opt-card').forEach(c => c.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  function getSelectedOptIndex(groupSelector) {
+    return Array.from(document.querySelector(groupSelector).querySelectorAll('.opt-card'))
+      .findIndex(c => c.classList.contains('sel'));
+  }
+
+  async function submitBuildChatbot() {
+    const fileId = document.getElementById('buildFileId').value;
+    const name = document.getElementById('botName').value.trim();
+    if (!name) { showToast('Please enter a chatbot name', 'warning'); return; }
+
+    const btn = document.getElementById('buildBtn');
+    btn.disabled = true;
+    btn.textContent = 'Building...';
+
+    try {
+      await API.buildChatbot({
+        file_id: fileId,
+        name,
+        chunking_strategy: chunkingMap[getSelectedOptIndex('#chunkingOpts')] || 'fixed',
+        chunk_size: parseInt(document.getElementById('chunkSize').value),
+        chunk_overlap: parseInt(document.getElementById('chunkOverlap').value),
+        embedding_model: embedMap[getSelectedOptIndex('#embedOpts')] || 'openai-ada-002',
+        vector_db: vdbMap[getSelectedOptIndex('#vdbOpts')] || 'chroma',
+        llm_model: document.getElementById('llmModel').value,
+        top_k: 5,
+        temperature: 0.3,
+      });
+      closeModal('buildModal');
+      showToast('Chatbot is being built! Check the Chatbots page.', 'success');
+      await loadStats();
+    } catch(e) {
+      showToast('Build failed: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Build Chatbot →';
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+
+  init();
+</script>
+</body>
+</html>

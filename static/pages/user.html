@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocMind — Account</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#080c10;--surface:#0d1117;--surface2:#111820;--border:#1e2a38;--accent:#00e5ff;--accent2:#7c3aed;--text:#e2e8f0;--muted:#4a5568;--success:#10b981;--warning:#f59e0b;--danger:#ef4444; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; display:flex; }
+  .sidebar { width:240px; min-height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-logo { padding:24px 20px; border-bottom:1px solid var(--border); }
+  .brand { font-size:22px; font-weight:800; letter-spacing:-1px; }
+  .brand span { color:var(--accent); }
+  .brand-sub { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+  .sidebar-nav { padding:16px 12px; flex:1; }
+  .nav-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; padding:8px 8px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:2px; color:var(--muted); font-size:14px; font-weight:600; transition:all 0.15s; text-decoration:none; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+  .nav-item.active { background:rgba(0,229,255,0.08); color:var(--accent); border-left:2px solid var(--accent); }
+  .sidebar-footer { padding:16px; border-top:1px solid var(--border); }
+  .user-pill { display:flex; align-items:center; gap:10px; padding:10px; border-radius:2px; background:rgba(255,255,255,0.03); }
+  .avatar { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .topbar { height:60px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:var(--surface); flex-shrink:0; }
+  .page-title { font-size:18px; font-weight:800; }
+  .page-title span { color:var(--accent); }
+  .content { flex:1; overflow-y:auto; padding:24px; }
+  .content::-webkit-scrollbar { width:4px; }
+  .content::-webkit-scrollbar-thumb { background:var(--border); }
+  .max-w { max-width:880px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:2px; margin-bottom:20px; }
+  .card-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-size:15px; font-weight:800; }
+  .card-sub { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+  .card-body { padding:24px; }
+  .form-group { margin-bottom:18px; }
+  .form-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .form-input { width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text); padding:11px 14px; font-family:'Syne',sans-serif; font-size:14px; outline:none; border-radius:2px; transition:border-color 0.2s; }
+  .form-input:focus { border-color:var(--accent); }
+  .btn { padding:8px 20px; border-radius:2px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; }
+  .btn-accent { background:var(--accent); color:#080c10; }
+  .btn-accent:hover { opacity:0.9; }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-ghost:hover { color:var(--text); }
+  .btn-danger { background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover { background:rgba(239,68,68,0.2); }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+  .profile-header { display:flex; align-items:center; gap:24px; margin-bottom:24px; }
+  .profile-avatar-big { width:72px; height:72px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#fff; flex-shrink:0; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .plan-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .plan-card { border:1px solid var(--border); border-radius:2px; padding:20px; position:relative; }
+  .plan-card.current { border-color:var(--accent); background:rgba(0,229,255,0.04); }
+  .plan-badge { position:absolute; top:-10px; left:16px; font-family:'Space Mono',monospace; font-size:9px; padding:3px 8px; border-radius:2px; font-weight:700; }
+  .plan-feature { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .plan-feature.on { color:var(--text); }
+  .plan-feature.on::before { content:'·'; color:var(--success); }
+  .plan-feature::before { content:'·'; color:var(--border); }
+  .progress-bar { height:8px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:10px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:3px; }
+  .toggle { position:relative; display:inline-block; width:40px; height:22px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:var(--border); border-radius:11px; transition:0.3s; }
+  .toggle-slider::before { content:''; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:var(--muted); border-radius:50%; transition:0.3s; }
+  .toggle input:checked + .toggle-slider { background:var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(18px); background:#080c10; }
+  .pref-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+  .pref-row:last-child { border-bottom:none; }
+  .api-key-row { display:flex; align-items:center; gap:10px; padding:12px 14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:2px; margin-bottom:8px; }
+  .api-key-name { font-size:13px; font-weight:700; min-width:130px; }
+  .api-key-val { flex:1; font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .api-key-date { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); min-width:90px; text-align:right; }
+  .danger-zone { border:1px solid rgba(239,68,68,0.3); border-radius:2px; padding:18px; background:rgba(239,68,68,0.03); display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px; }
+  .storage-breakdown { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+  .storage-type { text-align:center; padding:14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:2px; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Doc<span>Mind</span></div>
+    <div class="brand-sub">// AI Intelligence Platform</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="/dashboard" class="nav-item">
+      <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="/chatbots" class="nav-item">
+      <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Chatbots
+    </a>
+    <a href="/account" class="nav-item active">
+      <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Account
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar" data-user-initials>??</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;" data-user-name>Loading...</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);" data-user-plan>FREE TIER</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">My <span>Account</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="API.logout()">Sign Out →</button>
+  </div>
+
+  <div class="content">
+    <div class="max-w">
+
+      <!-- Profile -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Profile Information</div><div class="card-sub">Update your personal details</div></div>
+          <button class="btn btn-accent btn-sm" onclick="saveProfile()">Save Changes</button>
+        </div>
+        <div class="card-body">
+          <div class="profile-header">
+            <div class="profile-avatar-big" id="profileInitials">??</div>
+            <div>
+              <div id="profileName" style="font-size:20px;font-weight:800;">Loading...</div>
+              <div id="profileMeta" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;">—</div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="firstName" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="lastName" placeholder="Last name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="emailDisplay" disabled style="opacity:0.5;cursor:not-allowed;">
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;">Email cannot be changed</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Organization</label>
+            <input type="text" class="form-input" id="organization" placeholder="Your organization (optional)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Storage Usage</div><div class="card-sub" id="storageSubtitle">Loading...</div></div>
+          <span id="storagePct" style="font-family:'Space Mono',monospace;font-size:12px;">—</span>
+        </div>
+        <div class="card-body">
+          <div class="progress-bar"><div class="progress-fill" id="storageProgressBar" style="width:0%"></div></div>
+          <div class="storage-breakdown" id="storageBreakdown"></div>
+        </div>
+      </div>
+
+      <!-- Plan -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Subscription Plan</div><div class="card-sub" id="currentPlanLabel">—</div></div>
+        </div>
+        <div class="card-body">
+          <div class="plan-grid">
+            <div class="plan-card" id="planFree">
+              <div style="font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px;">FREE</div>
+              <div style="font-size:28px;font-weight:800;">$0</div>
+              <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">/month</div>
+              <div style="margin-top:14px;">
+                <div class="plan-feature on">5 GB storage</div>
+                <div class="plan-feature on">5 chatbots</div>
+                <div class="plan-feature on">Basic chunking</div>
+                <div class="plan-feature">Priority support</div>
+              </div>
+            </div>
+            <div class="plan-card" id="planPro">
+              <div style="font-size:12px;color:var(--accent);font-family:'Space Mono',monospace;margin-bottom:6px;">PRO</div>
+              <div style="font-size:28px;font-weight:800;color:var(--accent);">$29</div>
+              <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">/month</div>
+              <div style="margin-top:14px;">
+                <div class="plan-feature on">50 GB storage</div>
+                <div class="plan-feature on">Unlimited chatbots</div>
+                <div class="plan-feature on">All chunking types</div>
+                <div class="plan-feature on">Priority support</div>
+              </div>
+              <button class="btn btn-accent" style="width:100%;margin-top:14px;font-size:12px;" id="upgradePro" onclick="upgradePlan('pro')">Upgrade →</button>
+            </div>
+            <div class="plan-card" id="planEnterprise">
+              <div style="font-size:12px;color:#a78bfa;font-family:'Space Mono',monospace;margin-bottom:6px;">ENTERPRISE</div>
+              <div style="font-size:28px;font-weight:800;color:#a78bfa;">$99</div>
+              <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">/month</div>
+              <div style="margin-top:14px;">
+                <div class="plan-feature on">Unlimited storage</div>
+                <div class="plan-feature on">Unlimited chatbots</div>
+                <div class="plan-feature on">GraphRAG + KG</div>
+                <div class="plan-feature on">Dedicated support</div>
+              </div>
+              <button class="btn btn-ghost" style="width:100%;margin-top:14px;font-size:12px;" onclick="upgradePlan('enterprise')">Contact Sales</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">API Keys</div><div class="card-sub">Manage access keys for integrations</div></div>
+          <button class="btn btn-accent btn-sm" onclick="createApiKey()">+ Generate Key</button>
+        </div>
+        <div class="card-body">
+          <div id="apiKeyList"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Preferences & Notifications</div></div>
+        </div>
+        <div class="card-body">
+          <div class="pref-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;">Auto-categorize uploads</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">Use AI to auto-tag files by domain</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="pref_auto_cat" onchange="savePref('auto_categorize',this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="pref-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;">Email notifications</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">Get notified when chatbot indexing completes</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="pref_email" onchange="savePref('email_notify',this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="pref-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;">Weekly digest</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">Weekly summary of chatbot activity</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="pref_weekly" onchange="savePref('weekly_digest',this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="pref-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;">Usage analytics</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">Share anonymized data to improve the product</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="pref_analytics" onchange="savePref('analytics_opt_in',this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Security</div><div class="card-sub">Change your password</div></div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group" style="margin-bottom:0;grid-column:1/-1;max-width:400px;">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-input" id="currentPw" placeholder="••••••••">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="newPw" placeholder="Min. 8 characters">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="confirmPw" placeholder="••••••••">
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn btn-ghost btn-sm" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="border-color:rgba(239,68,68,0.3);">
+        <div class="card-header" style="border-color:rgba(239,68,68,0.2);">
+          <div><div class="card-title" style="color:var(--danger);">⚠ Danger Zone</div><div class="card-sub">Irreversible actions — proceed with caution</div></div>
+        </div>
+        <div class="card-body">
+          <div class="danger-zone">
+            <div>
+              <div style="font-size:14px;font-weight:700;">Delete account</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;">Permanently remove your account, all files, and chatbots</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteAccount()">Delete Account</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="/static/js/api.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('auth');
+
+  let currentUser = null;
+
+  async function init() {
+    populateUserUI();
+    try {
+      currentUser = await API.getMe();
+      fillProfile(currentUser);
+      await loadStats();
+      await loadApiKeys();
+    } catch(e) {
+      showToast('Failed to load account: ' + e.message, 'error');
+    }
+  }
+
+  function fillProfile(user) {
+    document.getElementById('profileInitials').textContent = user.initials;
+    document.getElementById('profileName').textContent = `${user.first_name} ${user.last_name}`;
+    document.getElementById('profileMeta').textContent = `${user.email} · ${user.plan.toUpperCase()} TIER · Member since ${formatDate(user.created_at)}`;
+    document.getElementById('firstName').value = user.first_name;
+    document.getElementById('lastName').value = user.last_name;
+    document.getElementById('emailDisplay').value = user.email;
+    document.getElementById('organization').value = user.organization || '';
+    document.getElementById('pref_auto_cat').checked = user.auto_categorize;
+    document.getElementById('pref_email').checked = user.email_notify;
+    document.getElementById('pref_weekly').checked = user.weekly_digest;
+    document.getElementById('pref_analytics').checked = user.analytics_opt_in;
+    document.getElementById('currentPlanLabel').textContent = `Currently on ${user.plan.toUpperCase()} plan`;
+
+    // Highlight current plan card
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('current'));
+    const planMap = { free: 'planFree', pro: 'planPro', enterprise: 'planEnterprise' };
+    const el = document.getElementById(planMap[user.plan]);
+    if (el) {
+      el.classList.add('current');
+      const badge = document.createElement('div');
+      badge.className = 'plan-badge';
+      badge.style.cssText = 'background:rgba(0,229,255,0.1);color:var(--accent);border:1px solid rgba(0,229,255,0.3);';
+      badge.textContent = 'CURRENT PLAN';
+      el.prepend(badge);
+    }
+    // Hide upgrade button for current plan
+    if (user.plan === 'pro') document.getElementById('upgradePro')?.remove();
+  }
+
+  async function loadStats() {
+    try {
+      const stats = await API.getStats();
+      const pct = Math.round(stats.storage_used_bytes / stats.storage_limit_bytes * 100);
+      document.getElementById('storageSubtitle').textContent =
+        `${formatBytes(stats.storage_used_bytes)} of ${formatBytes(stats.storage_limit_bytes)} used`;
+      document.getElementById('storagePct').textContent = `${pct}% used`;
+      document.getElementById('storageProgressBar').style.width = pct + '%';
+
+      // Breakdown by file type
+      const colors = { pdf:'#ef4444', docx:'#3b82f6', doc:'#3b82f6', csv:'#10b981', xlsx:'#10b981', txt:'#94a3b8', json:'#f59e0b' };
+      const breakdown = document.getElementById('storageBreakdown');
+      const types = Object.entries(stats.files_by_type);
+      if (types.length) {
+        breakdown.innerHTML = types.map(([type, count]) => `
+          <div class="storage-type">
+            <div style="font-size:16px;font-weight:800;color:${colors[type]||'#94a3b8'};">${count}</div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${type.toUpperCase()}</div>
+          </div>`).join('');
+      } else {
+        breakdown.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0;">No files uploaded yet</div>';
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  async function saveProfile() {
+    try {
+      const updated = await API.updateProfile({
+        first_name: document.getElementById('firstName').value.trim(),
+        last_name: document.getElementById('lastName').value.trim(),
+        organization: document.getElementById('organization').value.trim() || null,
+      });
+      currentUser = updated;
+      fillProfile(updated);
+      // Update localStorage user
+      const storedUser = API.getUser();
+      if (storedUser) {
+        storedUser.full_name = `${updated.first_name} ${updated.last_name}`;
+        storedUser.initials = updated.initials;
+        API.setUser(storedUser);
+      }
+      populateUserUI();
+      showToast('Profile saved successfully', 'success');
+    } catch(e) {
+      showToast('Failed to save: ' + e.message, 'error');
+    }
+  }
+
+  async function savePref(key, value) {
+    try {
+      await API.updatePreferences({ [key]: value });
+      showToast('Preference updated', 'success');
+    } catch(e) {
+      showToast('Failed to update preference', 'error');
+    }
+  }
+
+  async function changePassword() {
+    const current = document.getElementById('currentPw').value;
+    const newPw = document.getElementById('newPw').value;
+    const confirm = document.getElementById('confirmPw').value;
+    if (!current || !newPw || !confirm) { showToast('Fill in all password fields', 'warning'); return; }
+    if (newPw !== confirm) { showToast('New passwords do not match', 'error'); return; }
+    if (newPw.length < 8) { showToast('Password must be at least 8 characters', 'warning'); return; }
+    try {
+      await API.changePassword({ current_password: current, new_password: newPw, confirm_password: confirm });
+      document.getElementById('currentPw').value = '';
+      document.getElementById('newPw').value = '';
+      document.getElementById('confirmPw').value = '';
+      showToast('Password changed successfully', 'success');
+    } catch(e) {
+      showToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  async function upgradePlan(plan) {
+    if (!confirm(`Upgrade to ${plan.toUpperCase()} plan? (In production this would process payment)`)) return;
+    try {
+      await API.updatePreferences({}); // just to test connection
+      const res = await fetch(`/api/users/me/plan?plan=${plan}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${API.getToken()}` }
+      });
+      if (!res.ok) throw new Error((await res.json()).detail);
+      currentUser = await API.getMe();
+      fillProfile(currentUser);
+      showToast(`Upgraded to ${plan.toUpperCase()} plan!`, 'success');
+    } catch(e) {
+      showToast('Upgrade failed: ' + e.message, 'error');
+    }
+  }
+
+  // ── API Keys ─────────────────────────────────────────────────────────────
+  async function loadApiKeys() {
+    try {
+      const keys = await API.getApiKeys();
+      const el = document.getElementById('apiKeyList');
+      if (!keys.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-family:\'Space Mono\',monospace;">No API keys yet. Generate one above.</div>';
+        return;
+      }
+      el.innerHTML = keys.map(k => `
+        <div class="api-key-row" id="apiKey_${k.id}">
+          <div class="api-key-name">${k.name}</div>
+          <div class="api-key-val">${k.key_prefix}</div>
+          <div class="api-key-date">${formatDate(k.created_at)}</div>
+          <button class="btn btn-ghost btn-sm" onclick="copyKey('${k.key_prefix}')">Copy</button>
+          <button class="btn btn-danger btn-sm" onclick="revokeKey('${k.id}')">Revoke</button>
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('apiKeyList').innerHTML = '<div style="color:var(--danger);font-size:13px;">Failed to load API keys</div>';
+    }
+  }
+
+  async function createApiKey() {
+    const name = prompt('Name this API key (e.g. Production, Development):');
+    if (!name?.trim()) return;
+    try {
+      const key = await API.createApiKey(name.trim());
+      // Show the full key once
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:center;justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:#0d1117;border:1px solid #1e2a38;padding:32px;max-width:480px;width:90%;border-radius:2px;">
+          <div style="font-size:16px;font-weight:800;margin-bottom:8px;">🔑 New API Key Created</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:#4a5568;margin-bottom:16px;">Copy this key now — it will not be shown again.</div>
+          <div style="background:rgba(0,229,255,0.05);border:1px solid #00e5ff;padding:14px;border-radius:2px;font-family:'Space Mono',monospace;font-size:12px;word-break:break-all;color:#00e5ff;margin-bottom:16px;">${key.key}</div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="navigator.clipboard.writeText('${key.key}');showToast('Copied!','success')" style="background:#00e5ff;color:#080c10;border:none;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;border-radius:2px;">Copy Key</button>
+            <button onclick="this.closest('[style]').remove();loadApiKeys()" style="background:transparent;color:#4a5568;border:1px solid #1e2a38;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;border-radius:2px;">Close</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    } catch(e) {
+      showToast('Failed to create key: ' + e.message, 'error');
+    }
+  }
+
+  function copyKey(val) {
+    navigator.clipboard.writeText(val).then(() => showToast('Copied to clipboard', 'success'));
+  }
+
+  async function revokeKey(keyId) {
+    if (!confirm('Revoke this API key?')) return;
+    try {
+      await API.revokeApiKey(keyId);
+      document.getElementById('apiKey_' + keyId)?.remove();
+      showToast('API key revoked', 'success');
+    } catch(e) {
+      showToast('Failed to revoke: ' + e.message, 'error');
+    }
+  }
+
+  async function deleteAccount() {
+    const confirm1 = confirm('This will permanently delete your account, all files, and chatbots. Are you sure?');
+    if (!confirm1) return;
+    const confirm2 = prompt('Type DELETE to confirm:');
+    if (confirm2 !== 'DELETE') { showToast('Account deletion cancelled', 'info'); return; }
+    try {
+      await API.deleteAccount();
+      API.clearToken();
+      window.location.href = '/login';
+    } catch(e) {
+      showToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Database file (local SQLite – you might want to keep it, but it's user‑specific)
+docmind.db
+
+# Uploaded files and vector stores (user data)
+uploads/
+vectorstore/
+
+# Environment variables (contains SECRET_KEY)
+.env
+
+# IDE folders
+.vscode/
+.idea/
+
+# Logs
+*.log

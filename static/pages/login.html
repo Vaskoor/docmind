@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocMind — Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#080c10;--surface:#0d1117;--border:#1e2a38;--accent:#00e5ff;--accent2:#7c3aed;--text:#e2e8f0;--muted:#4a5568; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .grid-bg { position:fixed; inset:0; z-index:0; background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px); background-size:60px 60px; }
+  .glow-orb { position:fixed; border-radius:50%; filter:blur(120px); z-index:0; pointer-events:none; }
+  .card { position:relative; z-index:10; background:rgba(13,17,23,0.92); border:1px solid var(--border); border-radius:2px; width:100%; max-width:440px; padding:48px; backdrop-filter:blur(20px); box-shadow:0 0 0 1px rgba(0,229,255,0.05),0 32px 64px rgba(0,0,0,0.5); animation:fadeUp 0.6s ease forwards; }
+  .brand { font-size:28px; font-weight:800; letter-spacing:-1px; }
+  .brand span { color:var(--accent); }
+  .tag { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+  .label { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .input { width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text); padding:12px 16px; font-family:'Syne',sans-serif; font-size:15px; outline:none; border-radius:2px; transition:border-color 0.2s,box-shadow 0.2s; }
+  .input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,229,255,0.08); }
+  .btn-primary { width:100%; background:var(--accent); color:#080c10; font-family:'Syne',sans-serif; font-weight:700; font-size:14px; letter-spacing:1px; text-transform:uppercase; padding:14px; border:none; cursor:pointer; border-radius:2px; transition:opacity 0.2s,transform 0.1s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-primary:hover:not(:disabled) { opacity:0.9; transform:translateY(-1px); }
+  .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+  .divider { border:none; border-top:1px solid var(--border); margin:28px 0; }
+  .link { color:var(--accent); text-decoration:none; font-size:14px; }
+  .link:hover { text-decoration:underline; }
+  .corner { position:absolute; width:12px; height:12px; border-color:var(--accent); border-style:solid; }
+  .corner-tl { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+  .corner-tr { top:-1px; right:-1px; border-width:2px 2px 0 0; }
+  .corner-bl { bottom:-1px; left:-1px; border-width:0 0 2px 2px; }
+  .corner-br { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+  .error-box { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:2px; padding:12px 16px; font-size:13px; color:#f87171; margin-bottom:20px; display:none; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(8,12,16,0.3); border-top-color:#080c10; border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-orb" style="width:400px;height:400px;background:rgba(0,229,255,0.06);top:-100px;right:-100px;"></div>
+<div class="glow-orb" style="width:300px;height:300px;background:rgba(124,58,237,0.07);bottom:-50px;left:-50px;"></div>
+
+<div class="card">
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <div class="mb-10">
+    <div class="brand">Doc<span>Mind</span></div>
+    <div class="tag">// AI Document Intelligence Platform</div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <form id="loginForm">
+    <div class="mb-5">
+      <label class="label">Email Address</label>
+      <input type="email" id="email" class="input" placeholder="you@company.com" required autocomplete="email">
+    </div>
+    <div class="mb-6">
+      <label class="label">Password</label>
+      <input type="password" id="password" class="input" placeholder="••••••••••" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn-primary" id="submitBtn">
+      <span id="btnText">Access Platform →</span>
+      <div class="spinner" id="spinner" style="display:none;"></div>
+    </button>
+  </form>
+
+  <hr class="divider">
+  <div class="flex justify-between items-center">
+    <span style="color:var(--muted);font-size:13px;">No account yet?</span>
+    <a href="/register" class="link">Create account →</a>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  // If already logged in, redirect
+  if (API.getToken()) window.location.href = '/dashboard';
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorBox = document.getElementById('errorBox');
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    errorBox.style.display = 'none';
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+
+    try {
+      await API.login(email, password);
+      window.location.href = '/dashboard';
+    } catch (err) {
+      errorBox.textContent = err.message || 'Login failed. Please try again.';
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btnText.style.display = 'block';
+      spinner.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
